@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PIRA-TACTICAL | HUD Motorista de App Piracicaba</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pira: {
+              900: '#07090E',
+              850: '#0D111A',
+              800: '#141A26',
+              700: '#1F293D',
+              emerald: '#00F59B',
+              cyan: '#00E5FF',
+              amber: '#FFB800',
+              rose: '#FF3366',
+              purple: '#9D4EDD'
+            }
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css?v=2.5">
+</head>
+<body class="bg-pira-900 text-slate-100 font-sans antialiased min-h-screen pb-24 selection:bg-pira-emerald selection:text-black">
+
+  <!-- TOP HUD BAR (FIXO) -->
+  <header class="sticky top-0 z-50 bg-pira-900/90 backdrop-blur-md border-b border-pira-700/60 px-4 py-2.5 shadow-xl">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pira-emerald opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-pira-emerald"></span>
+        </div>
+        <div>
+          <h1 class="text-xs font-black tracking-wider uppercase text-pira-emerald flex items-center gap-1">
+            PIRA-TACTICAL <span class="text-[9px] bg-pira-800 text-slate-400 px-1.5 py-0.5 rounded border border-pira-700">SP-019</span>
+          </h1>
+          <p class="text-[10px] text-slate-400 font-mono" id="hud-clock">22:00:00 • AO VIVO</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="toggleQrModal()" class="px-2.5 py-1.5 bg-pira-800 hover:bg-pira-700 text-pira-cyan rounded-lg border border-pira-cyan/50 text-[10px] font-mono font-bold flex items-center gap-1.5 transition active:scale-95" title="Abrir QR Code para Celular">
+          <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">QR Code Celular</span>
+        </button>
+        <a href="/mobile" target="_blank" class="px-2.5 py-1.5 bg-pira-800 hover:bg-pira-700 text-pira-emerald rounded-lg border border-pira-emerald/50 text-[10px] font-mono font-bold flex items-center gap-1.5 transition active:scale-95" title="Abrir HUD Otimizado para Celular / Suporte Veicular">
+          <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Modo Celular (HUD)</span>
+        </a>
+        <button id="btn-help" onclick="toggleHelpModal()" class="p-2 bg-pira-800 hover:bg-pira-700 text-pira-emerald rounded-lg border border-pira-700 transition flex items-center justify-center" title="Como Usar">
+          <i data-lucide="help-circle" class="w-4 h-4"></i>
+        </button>
+        <button id="btn-refresh" onclick="forceRefresh()" class="p-2 bg-pira-800 hover:bg-pira-700 active:scale-95 text-pira-cyan rounded-lg border border-pira-700 transition flex items-center justify-center">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+        <button id="btn-audio-toggle" onclick="toggleAudioAlerts()" class="p-2 bg-pira-800 hover:bg-pira-700 text-pira-amber rounded-lg border border-pira-700 transition flex items-center justify-center">
+          <i data-lucide="volume-2" id="audio-icon" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MODAL DE AJUDA / GUIA DE OPERAÇÃO RÁPIDA -->
+  <div id="help-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-pira-850 border border-pira-emerald/50 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+      <div class="flex justify-between items-center border-b border-pira-700 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="zap" class="w-5 h-5 text-pira-emerald"></i>
+          <h2 class="text-sm font-bold uppercase text-white">Como Operar no Dia a Dia</h2>
+        </div>
+        <button onclick="toggleHelpModal()" class="p-1 text-slate-400 hover:text-white rounded-lg bg-pira-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        <div class="flex items-start gap-2.5 p-2.5 bg-pira-800 rounded-lg border border-pira-700">
+          <span class="font-black font-mono text-pira-emerald text-sm bg-emerald-950 px-2 py-0.5 rounded">1</span>
+          <div>
+            <strong class="text-white block mb-0.5">Veja a Grade Semanal (7 Colunas):</strong>
+            Cada coluna mostra a programação de Teatros, Cinemas Multiplex, Grandes Eventos e Turnos de Segunda a Domingo.
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-pira-800 rounded-lg border border-pira-700">
+          <span class="font-black font-mono text-pira-cyan text-sm bg-blue-950 px-2 py-0.5 rounded">2</span>
+          <div>
+            <strong class="text-white block mb-0.5">Siga o "Top Atividades do Dia":</strong>
+            O card com Score mais alto (ex: 94 pts) é onde o preço dinâmico vai estourar. Vá para o local <strong>15 a 20 minutos antes</strong> da saída.
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-pira-800 rounded-lg border border-pira-700">
+          <span class="font-black font-mono text-pira-amber text-sm bg-amber-950 px-2 py-0.5 rounded">3</span>
+          <div>
+            <strong class="text-white block mb-0.5">Use o Radar Horário & Calculadora:</strong>
+            O Radar diz onde estar a cada 2 horas. Use o avaliador no rodapé para saber se compensa o km rodado.
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-rose-950/40 rounded-lg border border-rose-800/60">
+          <span class="font-black font-mono text-pira-rose text-sm bg-rose-950 px-2 py-0.5 rounded">4</span>
+          <div>
+            <strong class="text-rose-300 block mb-0.5">Atenção às Zonas Vermelhas:</strong>
+            Nunca aceite chamadas para o Beco do Pantanal, Extremo Mário Dedini ou Estrada de Ártemis à noite.
+          </div>
+        </div>
+      </div>
+
+      <button onclick="toggleHelpModal()" class="w-full py-2.5 bg-pira-emerald text-black font-black text-xs uppercase rounded-xl active:scale-95 transition">
+        Entendi, Vamos Faturar! 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER (FLEXÍVEL E RESPONSIVO) -->
+  <main class="max-w-7xl mx-auto px-3 pt-3 space-y-5">
+
+    <!-- SEÇÃO PRINCIPAL: PAINEL DA GRADE SEMANAL COMPLETA (7 COLUNAS LADO A LADO) -->
+    <section id="weekly-board-section" class="bg-pira-850 rounded-2xl p-4 border border-pira-cyan/50 shadow-2xl space-y-3">
+      <div class="flex flex-wrap justify-between items-center gap-2 border-b border-pira-700/60 pb-3">
+        <div>
+          <h2 class="text-sm font-black uppercase tracking-wider text-pira-cyan flex items-center gap-2">
+            <i data-lucide="layout-grid" class="w-5 h-5 text-pira-cyan"></i>
+            Grade Semanal de Demanda & Eventos (Segunda a Domingo)
+          </h2>
+          <p class="text-xs text-slate-400 font-mono mt-0.5">
+            Agenda completa de Teatros (Dr. Losso Netto/Sesc), Cinemas (Multiplex Shopping), Grandes Shows (Engenho Central), Bares e Turnos
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs bg-pira-800 text-pira-emerald px-2.5 py-1 rounded-lg font-mono font-bold border border-pira-700 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-pira-emerald animate-pulse"></span> 7 Dias Ativos
+          </span>
+        </div>
+      </div>
+
+      <!-- Carrossel / Grid Horizontal de 7 Colunas -->
+      <div class="flex gap-3 overflow-x-auto pb-4 pt-1 scrollbar-thin snap-x scroll-smooth" id="weekly-columns-container">
+        <!-- Preenchido dinamicamente via app.js -->
+        <div class="animate-pulse bg-pira-800 rounded-xl w-[260px] h-96 border border-pira-700 shrink-0"></div>
+        <div class="animate-pulse bg-pira-800 rounded-xl w-[260px] h-96 border border-pira-700 shrink-0"></div>
+        <div class="animate-pulse bg-pira-800 rounded-xl w-[260px] h-96 border border-pira-700 shrink-0"></div>
+      </div>
+    </section>
+
+    <!-- SELETOR RÁPIDO DO DIA SELECIONADO & STATUS -->
+    <section class="bg-pira-850 rounded-xl p-3 border border-pira-emerald/40 shadow-lg space-y-2.5">
+      <div class="flex justify-between items-center text-xs">
+        <span class="text-slate-300 font-bold flex items-center gap-1.5 uppercase tracking-wide">
+          <i data-lucide="calendar-range" class="w-4 h-4 text-pira-emerald"></i>
+          Filtrar Foco do Dia no Radar & Mapa
+        </span>
+        <span id="current-day-label" class="text-[10px] font-mono text-pira-cyan font-bold bg-pira-800 px-2 py-0.5 rounded border border-pira-700">
+          Hoje (Terça-feira)
+        </span>
+      </div>
+
+      <!-- Barra de Botões dos Dias da Semana -->
+      <div class="grid grid-cols-7 gap-1 text-center font-mono text-[10px]" id="week-day-selector">
+        <!-- Gerado dinamicamente via app.js -->
+      </div>
+    </section>
+
+    <!-- GRID INFERIOR (LAYOUT 2 COLUNAS NO DESKTOP, 1 NO MOBILE) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <!-- COLUNA ESQUERDA: TOP ATIVIDADES & SIMULADOR -->
+      <div class="space-y-4">
+        
+        <!-- FEED STATUS & TIME WARP SIMULATOR (24 HORAS) -->
+        <section id="focus-feed-status-section" class="bg-pira-850 rounded-xl p-3 border border-pira-700/70 shadow-lg space-y-2.5">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 flex items-center gap-1 font-mono">
+              <i data-lucide="satellite" class="w-3.5 h-3.5 text-pira-cyan"></i>
+              Último Scrape: <strong id="last-update-time" class="text-slate-200">19:36</strong>
+            </span>
+            <span class="text-[11px] font-mono text-pira-emerald bg-pira-emerald/10 px-2 py-0.5 rounded-full border border-pira-emerald/20" id="next-scrape-eta">
+              Próx: 20:36
+            </span>
+          </div>
+
+          <!-- Time Warp Slider 24 Horas -->
+          <div class="pt-2 border-t border-pira-700/50 space-y-2">
+            <div class="flex justify-between items-center text-[11px] font-mono">
+              <span class="text-slate-300 font-bold flex items-center gap-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-pira-amber"></i> Simular Horário Tático (24 Horas):
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span id="slider-hour-display" class="font-bold text-pira-amber text-xs bg-pira-800 px-2.5 py-0.5 rounded border border-pira-700">Horário Real</span>
+                <button onclick="resetTimeSlider()" class="text-[10px] bg-pira-700 hover:bg-pira-600 text-pira-cyan px-2 py-0.5 rounded font-mono font-bold active:scale-95 transition" title="Voltar ao horário real agora">
+                  🕒 Real
+                </button>
+              </div>
+            </div>
+
+            <!-- Slider contínuo 0h - 23h -->
+            <input type="range" id="time-slider" min="0" max="23" value="19" step="1" oninput="onTimeSliderChange(this.value)" class="w-full accent-pira-amber bg-pira-800 h-2.5 rounded-lg cursor-pointer">
+            
+            <!-- Escala Linear 24 Horas -->
+            <div class="flex justify-between text-[9px] text-slate-400 font-mono">
+              <span>00h Madrugada</span>
+              <span>06h Manhã</span>
+              <span>12h Almoço</span>
+              <span>18h Pico</span>
+              <span>23h Noite</span>
+            </div>
+
+            <!-- Botões de Atalhos de Turnos das 24 Horas -->
+            <div class="grid grid-cols-6 gap-1 text-[9px] font-mono pt-1">
+              <button onclick="setTimeSliderPreset(6)" class="p-1 bg-pira-800 hover:bg-pira-700 text-slate-300 rounded border border-pira-700 active:scale-95">🌅 06h Manhã</button>
+              <button onclick="setTimeSliderPreset(12)" class="p-1 bg-pira-800 hover:bg-pira-700 text-slate-300 rounded border border-pira-700 active:scale-95">🍽️ 12h Almoço</button>
+              <button onclick="setTimeSliderPreset(15)" class="p-1 bg-pira-800 hover:bg-pira-700 text-slate-300 rounded border border-pira-700 active:scale-95">🏭 15h 2ºTurno</button>
+              <button onclick="setTimeSliderPreset(18)" class="p-1 bg-pira-800 hover:bg-pira-700 text-pira-amber rounded border border-amber-800/60 font-bold active:scale-95">🚗 18h Pico</button>
+              <button onclick="setTimeSliderPreset(22)" class="p-1 bg-pira-800 hover:bg-pira-700 text-pira-emerald rounded border border-emerald-800/60 font-bold active:scale-95">🎓 22h Saídas</button>
+              <button onclick="setTimeSliderPreset(2)" class="p-1 bg-pira-800 hover:bg-pira-700 text-pira-rose rounded border border-rose-800/60 font-bold active:scale-95">🌙 02h Corujão</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- CARD 1: TOP ATIVIDADES DO DIA (RESUMO DO DIA - MELHOR PARA O PIOR) -->
+        <section class="space-y-2">
+          <div class="flex justify-between items-center px-1">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="flame" class="w-4 h-4 text-pira-rose"></i>
+              Top Atividades do Dia (Ranking Preditivo)
+            </h2>
+            <span class="text-[10px] bg-pira-800 text-pira-cyan px-2 py-0.5 rounded-md font-mono border border-pira-700" id="active-count-badge">
+              6 Ativos
+            </span>
+          </div>
+
+          <div id="ranked-cards-list" class="space-y-2.5">
+            <!-- Renderizado dinamicamente via app.js -->
+            <div class="animate-pulse bg-pira-850 p-4 rounded-xl h-28 border border-pira-700"></div>
+          </div>
+        </section>
+
+        <!-- CARD 2: RADAR DE FAIXAS HORÁRIAS (ONDE SE POSICIONAR AGORA) -->
+        <section class="bg-pira-850 rounded-xl p-3.5 border border-pira-700/80 shadow-lg">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="crosshair" class="w-4 h-4 text-pira-cyan"></i>
+              Radar Tático de Posicionamento (Próximas Horas)
+            </h2>
+            <span class="text-[10px] text-pira-amber font-mono font-bold animate-pulse" id="radar-now-badge">AGORA: 22h</span>
+          </div>
+
+          <div id="radar-timeline" class="space-y-2">
+            <!-- Timeline dinâmica -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- COLUNA DIREITA: MAPA, RISCO E INTERMUNICIPAL -->
+      <div class="space-y-4">
+
+        <!-- CARD 3: MAPA INTERATIVO DE RISCO E RENTABILIDADE (PIRACICABA) -->
+        <section class="bg-pira-850 rounded-xl p-3 border border-pira-700/80 shadow-lg space-y-2.5">
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="map-pin" class="w-4 h-4 text-pira-emerald"></i>
+                Mapa Tático de Piracicaba
+              </h2>
+              <span id="map-point-count" class="text-[9px] font-mono text-pira-cyan bg-pira-800 px-1.5 py-0.5 rounded border border-pira-700">Carregando...</span>
+            </div>
+            
+            <div class="flex items-center gap-1">
+              <!-- Filtro de Tipo de Ponto -->
+              <div class="flex gap-1 text-[10px] bg-pira-900 p-0.5 rounded-lg border border-pira-700">
+                <button onclick="filterMap('ALL', this)" class="map-filter-btn px-2 py-0.5 rounded bg-pira-700 text-white font-mono font-bold">Todos</button>
+                <button onclick="filterMap('SAFE', this)" class="map-filter-btn px-2 py-0.5 rounded text-pira-emerald font-mono hover:bg-pira-800">🟢 Oportunidades</button>
+                <button onclick="filterMap('RISK', this)" class="map-filter-btn px-2 py-0.5 rounded text-pira-rose font-mono hover:bg-pira-800">🔴 Risco</button>
+              </div>
+
+              <!-- Botão Expandir / Reduzir Tamanho do Mapa -->
+              <button id="btn-toggle-map-size" onclick="toggleMapHeight()" class="p-1.5 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 transition active:scale-95" title="Expandir/Reduzir Mapa">
+                <i data-lucide="maximize-2" id="icon-map-size" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Seletor de Camadas (Ruas Claras / Tático Dark / Satélite) & Centralizar -->
+          <div class="flex items-center justify-between gap-1 text-[10px] font-mono bg-pira-900/90 p-1.5 rounded-lg border border-pira-700/60">
+            <div class="flex items-center gap-1">
+              <span class="text-slate-400 text-[9px] hidden sm:inline">Camada:</span>
+              <button onclick="switchMapLayer('street', this)" class="map-layer-btn px-2 py-1 rounded bg-pira-emerald text-black font-bold border border-pira-emerald shadow">🗺️ Ruas Detalhadas</button>
+              <button onclick="switchMapLayer('dark', this)" class="map-layer-btn px-2 py-1 rounded bg-pira-800 text-slate-300 border border-pira-700 hover:text-white">🌙 Tático Dark</button>
+              <button onclick="switchMapLayer('satellite', this)" class="map-layer-btn px-2 py-1 rounded bg-pira-800 text-slate-300 border border-pira-700 hover:text-white">🛰️ Satélite</button>
+            </div>
+            
+            <button onclick="recenterMap()" class="px-2 py-1 bg-pira-800 hover:bg-pira-700 text-pira-cyan font-bold rounded border border-pira-700 active:scale-95 flex items-center gap-1" title="Voltar ao Centro de Piracicaba">
+              <i data-lucide="crosshair" class="w-3 h-3"></i>
+              <span>Centro</span>
+            </button>
+          </div>
+
+          <!-- Barra de Atalhos Rápidos de Locais (1 Toque para Focar e Abrir) -->
+          <div class="space-y-1">
+            <span class="text-[9px] font-mono text-slate-400 block">⚡ Toque para focar no mapa:</span>
+            <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px] font-mono scrollbar-none" id="quick-map-locations">
+              <button onclick="focusMapLocation(-22.7094, -47.6568, 'Shopping Piracicaba')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🛍️ Shopping</button>
+              <button onclick="focusMapLocation(-22.7328, -47.6539, 'Rua do Porto')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🐟 Rua do Porto</button>
+              <button onclick="focusMapLocation(-22.7126, -47.6322, 'Campus ESALQ')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🎓 ESALQ / USP</button>
+              <button onclick="focusMapLocation(-22.7239, -47.6562, 'Parque do Engenho Central')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🎭 Engenho Central</button>
+              <button onclick="focusMapLocation(-22.7214, -47.6394, 'Av. Carlos Botelho')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🍺 Carlos Botelho</button>
+              <button onclick="focusMapLocation(-22.7345, -47.6081, 'Unileste')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🏭 Unileste</button>
+              <button onclick="focusMapLocation(-22.7561, -47.5925, 'Pólo Hyundai')" class="px-2.5 py-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded-lg border border-pira-700 whitespace-nowrap active:scale-95">🚗 Hyundai SP-127</button>
+              <button onclick="focusMapLocation(-22.7485, -47.6621, 'Beco do Pantanal')" class="px-2.5 py-1 bg-rose-950/70 hover:bg-rose-900 text-pira-rose rounded-lg border border-rose-800/60 whitespace-nowrap active:scale-95">⛔ Beco do Pantanal</button>
+              <button onclick="focusMapLocation(-22.6892, -47.6610, 'Mário Dedini')" class="px-2.5 py-1 bg-rose-950/70 hover:bg-rose-900 text-pira-rose rounded-lg border border-rose-800/60 whitespace-nowrap active:scale-95">⛔ Mário Dedini</button>
+            </div>
+          </div>
+
+          <!-- Container do Mapa Leaflet com altura ampla -->
+          <div id="tactical-map" class="h-96 sm:h-[420px] w-full rounded-xl border border-pira-700 overflow-hidden relative z-0 transition-all duration-300"></div>
+
+          <!-- Legenda Rápida do Mapa -->
+          <div class="grid grid-cols-3 gap-1 text-[9px] font-mono text-center pt-1 border-t border-pira-700/50">
+            <div class="bg-emerald-950/40 text-pira-emerald py-1 px-1 rounded border border-emerald-800/40 truncate">🟢 Alta Demanda (Pólos)</div>
+            <div class="bg-amber-950/40 text-pira-amber py-1 px-1 rounded border border-amber-800/40 truncate">🟡 Km Morto / Sem Retorno</div>
+            <div class="bg-rose-950/40 text-pira-rose py-1 px-1 rounded border border-rose-800/40 truncate">🔴 Perigo / Gargalo</div>
+          </div>
+        </section>
+
+        <!-- CARD 4: MATRIZ DE SEGURANÇA E FILTROS DE ACEITE (PIRACICABA) -->
+        <section class="bg-pira-850 rounded-xl p-3.5 border border-pira-700/80 shadow-lg space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-pira-rose"></i>
+              Matriz de Risco & Zonas Proibidas
+            </h2>
+            <span class="text-[10px] text-pira-rose bg-rose-950/50 px-2 py-0.5 rounded font-mono border border-rose-800/60">ALERTA NOTURNO</span>
+          </div>
+
+          <!-- Filtro Rápido de Categorias de Risco -->
+          <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono scrollbar-none" id="risk-category-pills">
+            <button onclick="renderRiskTable('ALL', this)" class="risk-pill-btn active px-2.5 py-1 rounded-lg bg-pira-700 text-white font-bold whitespace-nowrap">Todas as Zonas</button>
+            <button onclick="renderRiskTable('CUIDADO_DIURNO', this)" class="risk-pill-btn px-2.5 py-1 rounded-lg bg-pira-800 text-amber-300 border border-amber-800/60 whitespace-nowrap">☀️ Cuidado Diurno</button>
+            <button onclick="renderRiskTable('GARGALO_DIURNO', this)" class="risk-pill-btn px-2.5 py-1 rounded-lg bg-pira-800 text-pira-cyan border border-cyan-800/60 whitespace-nowrap">🚦 Gargalo Diurno</button>
+            <button onclick="renderRiskTable('PERIGO_NOTURNO', this)" class="risk-pill-btn px-2.5 py-1 rounded-lg bg-pira-800 text-pira-rose border border-rose-900/50 whitespace-nowrap">🌙 Perigo Noturno</button>
+            <button onclick="renderRiskTable('KM_MORTO', this)" class="risk-pill-btn px-2.5 py-1 rounded-lg bg-pira-800 text-pira-amber border border-amber-900/50 whitespace-nowrap">⚠️ Km Morto</button>
+            <button onclick="renderRiskTable('BLOQUEIO_CRITICO', this)" class="risk-pill-btn px-2.5 py-1 rounded-lg bg-pira-800 text-pira-purple border border-purple-900/50 whitespace-nowrap">🚫 Bloqueio Crítico</button>
+          </div>
+
+          <div id="risk-list" class="space-y-2">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </section>
+
+        <!-- CARD 5: REGRA DE OURO - CORRIDAS INTERMUNICIPAIS -->
+        <section class="bg-pira-850 rounded-xl p-3.5 border border-pira-700/80 shadow-lg space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="compass" class="w-4 h-4 text-pira-amber"></i>
+              Regra de Ouro Intermunicipal (Saindo de Piracicaba)
+            </h2>
+            <span class="text-[10px] text-slate-400 font-mono">Viracopos / RMC</span>
+          </div>
+
+          <div id="intercity-list" class="space-y-2">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </section>
+
+        <!-- CARD 6: QUICK TRIP ACCEPTANCE CALCULATOR -->
+        <section id="trip-calculator-section" class="bg-pira-850 rounded-xl p-3.5 border border-pira-700/80 shadow-lg space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="calculator" class="w-4 h-4 text-pira-emerald"></i>
+              Avaliador Rápido de Corrida (Compensa Aceitar?)
+            </h2>
+            <span class="text-[9px] font-mono text-pira-emerald bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60">CÁLCULO EM TEMPO REAL</span>
+          </div>
+
+          <!-- Presets de 1 Toque (Testes Rápidos) -->
+          <div>
+            <span class="text-[9px] text-slate-400 font-mono block mb-1">Simulação Rápida (Toque para testar):</span>
+            <div class="grid grid-cols-3 gap-1 text-[10px] font-mono">
+              <button onclick="setCalcPreset(16, 4.2, 11, 'Centro')" class="p-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded border border-pira-700 truncate active:scale-95">⚡ Curta (R$16)</button>
+              <button onclick="setCalcPreset(32, 10.5, 20, 'Vila Rezende')" class="p-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded border border-pira-700 truncate active:scale-95">🛍️ Shopping (R$32)</button>
+              <button onclick="setCalcPreset(48, 17.0, 26, 'Unileste')" class="p-1 bg-pira-800 hover:bg-pira-700 text-slate-200 rounded border border-pira-700 truncate active:scale-95">🏭 Unileste (R$48)</button>
+              <button onclick="setCalcPreset(175, 78.0, 65, 'Viracopos')" class="p-1 bg-pira-800 hover:bg-pira-700 text-pira-emerald rounded border border-emerald-800/60 truncate active:scale-95">✈️ Viracopos (R$175)</button>
+              <button onclick="setCalcPreset(22, 12.0, 28, 'Mário Dedini')" class="p-1 bg-pira-800 hover:bg-pira-700 text-pira-rose rounded border border-rose-800/60 truncate active:scale-95">⚠️ Risco (R$22)</button>
+              <button onclick="setCalcPreset(14, 9.8, 22, 'Centro')" class="p-1 bg-pira-800 hover:bg-pira-700 text-pira-amber rounded border border-amber-800/60 truncate active:scale-95">❌ Ruim (R$14)</button>
+            </div>
+          </div>
+
+          <!-- SELETOR DE COMBUSTÍVEL & CONSUMO DO VEÍCULO -->
+          <div class="p-2.5 rounded-lg bg-pira-800/80 border border-pira-700/70 space-y-2">
+            <div class="flex justify-between items-center text-[10px] font-mono">
+              <span class="text-slate-300 font-bold flex items-center gap-1">
+                <i data-lucide="fuel" class="w-3.5 h-3.5 text-pira-amber"></i> Meu Combustível & Carro:
+              </span>
+              <span id="calc-cost-per-km-badge" class="text-pira-amber font-bold">Custo: R$ 0,68 / km</span>
+            </div>
+
+            <!-- Botões de Tipo de Combustível -->
+            <div class="grid grid-cols-4 gap-1 text-[9px] font-mono">
+              <button id="btn-fuel-etanol" onclick="setFuelType('ETANOL')" class="fuel-type-btn p-1 rounded bg-pira-700 text-pira-emerald font-bold border border-pira-emerald/50">🌾 Etanol</button>
+              <button id="btn-fuel-gasolina" onclick="setFuelType('GASOLINA')" class="fuel-type-btn p-1 rounded bg-pira-800 text-slate-300 border border-pira-700">⛽ Gasolina</button>
+              <button id="btn-fuel-gnv" onclick="setFuelType('GNV')" class="fuel-type-btn p-1 rounded bg-pira-800 text-slate-300 border border-pira-700">💨 GNV</button>
+              <button id="btn-fuel-eletrico" onclick="setFuelType('ELETRICO')" class="fuel-type-btn p-1 rounded bg-pira-800 text-slate-300 border border-pira-700">⚡ Elétrico</button>
+            </div>
+
+            <!-- Campos de Preço e Média de Consumo -->
+            <div class="grid grid-cols-3 gap-2 text-[10px] font-mono pt-1">
+              <div>
+                <label class="text-slate-400 block text-[9px]">Preço Bomba (R$)</label>
+                <input type="number" id="cfg-fuel-price" value="3.69" step="0.05" oninput="calculateTripViability()" class="w-full bg-pira-900 text-white font-bold p-1 rounded border border-pira-700 text-center outline-none">
+              </div>
+              <div>
+                <label class="text-slate-400 block text-[9px]">Média (km/L)</label>
+                <input type="number" id="cfg-fuel-kml" value="8.5" step="0.5" oninput="calculateTripViability()" class="w-full bg-pira-900 text-white font-bold p-1 rounded border border-pira-700 text-center outline-none">
+              </div>
+              <div>
+                <label class="text-slate-400 block text-[9px]">Manut./Pneu (R$/km)</label>
+                <input type="number" id="cfg-maint-km" value="0.25" step="0.05" oninput="calculateTripViability()" class="w-full bg-pira-900 text-white font-bold p-1 rounded border border-pira-700 text-center outline-none">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Formulário Interativo da Corrida -->
+          <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-1">Valor Total (R$)</label>
+              <input type="number" id="calc-val" value="38.50" step="0.50" oninput="calculateTripViability()" class="w-full bg-pira-800 text-white font-bold p-2 rounded-lg border border-pira-700 focus:border-pira-emerald outline-none text-center">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-1">Km Total (km)</label>
+              <input type="number" id="calc-km" value="12.0" step="0.5" oninput="calculateTripViability()" class="w-full bg-pira-800 text-white font-bold p-2 rounded-lg border border-pira-700 focus:border-pira-emerald outline-none text-center">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-1">Tempo (min)</label>
+              <input type="number" id="calc-min" value="22" step="1" oninput="calculateTripViability()" class="w-full bg-pira-800 text-white font-bold p-2 rounded-lg border border-pira-700 focus:border-pira-emerald outline-none text-center">
+            </div>
+          </div>
+
+          <!-- Seleção de Bairro / Destino (Checagem de Risco) -->
+          <div class="text-xs font-mono">
+            <label class="text-[10px] text-slate-400 block mb-1">Bairro / Destino de Desembarque:</label>
+            <select id="calc-dest" onchange="calculateTripViability()" class="w-full bg-pira-800 text-slate-200 font-bold p-2 rounded-lg border border-pira-700 focus:border-pira-emerald outline-none text-xs">
+              <option value="Centro">Centro / São Dimas / Bairro Alto (Seguro)</option>
+              <option value="Vila Rezende">Vila Rezende / Shopping Piracicaba (Seguro)</option>
+              <option value="Agronomia">Agronomia / Campus ESALQ (Seguro)</option>
+              <option value="Dois Córregos">Dois Córregos / Piracicamirim (Seguro)</option>
+              <option value="Santa Rosa">Santa Rosa / Vila Sônia (Seguro)</option>
+              <option value="Unileste">Distrito Industrial Unileste (Normal)</option>
+              <option value="Viracopos">Aeroporto de Viracopos / Campinas (Ouro Intermunicipal)</option>
+              <option value="Limeira">Limeira Centro (Intermunicipal Regular)</option>
+              <option value="Americana">Americana / SBO (Intermunicipal Bom)</option>
+              <option value="Tupi">Distrito de Tupi / Ceasa (Km Morto no Retorno)</option>
+              <option value="Pantanal">Beco do Pantanal / Fundo Pauliceia (Perigo Noturno / Vielas)</option>
+              <option value="Mário Dedini">Jardim Brasília / Extremo Mário Dedini (Perigo Noturno)</option>
+              <option value="Morumbi">Morumbi (Alto do Morro / Sem Saída)</option>
+              <option value="Ártemis">Estrada Ártemis / Tanquinho (Sem Sinal / Rural)</option>
+              <option value="Anhumas">Distrito de Anhumas (25km Km Morto)</option>
+            </select>
+          </div>
+
+          <!-- Painel de Métricas Calculadas -->
+          <div class="grid grid-cols-4 gap-1.5 p-2.5 rounded-lg bg-pira-900 border border-pira-700/80 text-center font-mono">
+            <div>
+              <span class="text-[9px] text-slate-400 block">R$ / km</span>
+              <strong id="metric-rs-km" class="text-pira-emerald text-xs block">R$ 3,21</strong>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400 block">R$ / hora</span>
+              <strong id="metric-rs-hora" class="text-pira-cyan text-xs block">R$ 105,00</strong>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400 block">Combustível</span>
+              <strong id="metric-custo" class="text-pira-amber text-xs block">R$ 10,20</strong>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400 block">Lucro Líquido</span>
+              <strong id="metric-lucro" class="text-pira-emerald text-xs font-black block">R$ 28,30</strong>
+            </div>
+          </div>
+
+          <!-- Veredito Instantâneo Box -->
+          <div id="calc-verdict-box" class="p-3 rounded-xl border flex flex-col sm:flex-row justify-between items-center gap-2 text-xs font-mono transition-all duration-200">
+            <div>
+              <strong id="calc-verdict-title" class="text-white text-xs block font-bold">VEREDITO TÁTICO:</strong>
+              <p id="calc-verdict-desc" class="text-slate-300 text-[11px] leading-tight">Excelente rendimento por km e valor de hora.</p>
+            </div>
+            <span id="calc-badge" class="px-3 py-1.5 rounded-lg text-xs font-black text-center whitespace-nowrap shadow-md">ACEITAR (MUITO LUCRATIVA)</span>
+          </div>
+        </section>
+
+  </main>
+
+  <!-- FIXED BOTTOM ACTION BAR -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-pira-900/95 backdrop-blur-md border-t border-pira-700/80 p-2.5 z-50">
+    <div class="max-w-md mx-auto grid grid-cols-3 gap-2">
+      <button onclick="scrollToSection('weekly-board-section')" class="flex flex-col items-center justify-center p-2 rounded-lg bg-pira-800 hover:bg-pira-700 text-slate-200 active:scale-95 transition">
+        <i data-lucide="layout-grid" class="w-4 h-4 text-pira-cyan"></i>
+        <span class="text-[10px] font-bold mt-0.5">7 Colunas</span>
+      </button>
+      <button onclick="scrollToSection('tactical-map')" class="flex flex-col items-center justify-center p-2 rounded-lg bg-pira-800 hover:bg-pira-700 text-slate-200 active:scale-95 transition">
+        <i data-lucide="map" class="w-4 h-4 text-pira-emerald"></i>
+        <span class="text-[10px] font-bold mt-0.5">Mapa & Risco</span>
+      </button>
+      <button onclick="scrollToSection('intercity-list')" class="flex flex-col items-center justify-center p-2 rounded-lg bg-pira-800 hover:bg-pira-700 text-slate-200 active:scale-95 transition">
+        <i data-lucide="compass" class="w-4 h-4 text-pira-amber"></i>
+        <span class="text-[10px] font-bold mt-0.5">Intermunicipal</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- MODAL QR CODE CELULAR -->
+  <div id="modal-qr" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-pira-900 border border-pira-cyan/50 rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl relative">
+      <button onclick="toggleQrModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <h3 class="text-sm font-black text-pira-cyan uppercase tracking-wider flex items-center justify-center gap-2">
+        <i data-lucide="smartphone" class="w-4 h-4"></i>
+        Acesso Direto no Celular
+      </h3>
+      <p class="text-xs text-slate-300">Aponte a <strong>câmera do seu celular</strong> para o QR Code abaixo para abrir instantaneamente sem digitar nada:</p>
+      <div class="bg-white p-3 rounded-xl inline-block shadow-lg mx-auto">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://drama-bizrate-contributed-notices.trycloudflare.com/mobile" alt="QR Code" class="w-48 h-48 mx-auto">
+      </div>
+      <p class="text-[11px] text-slate-400 font-mono break-all bg-pira-950 p-2 rounded-lg border border-pira-800">
+        https://drama-bizrate-contributed-notices.trycloudflare.com/mobile
+      </p>
+      <button onclick="toggleQrModal()" class="w-full py-2 bg-pira-800 hover:bg-pira-700 text-white text-xs font-bold rounded-xl transition">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function toggleQrModal() {
+      const modal = document.getElementById('modal-qr');
+      if (modal) {
+        modal.classList.toggle('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  </script>
+  <script src="app.js?v=2.5"></script>
+</body>
+</html>
+

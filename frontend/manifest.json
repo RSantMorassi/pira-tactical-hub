@@ -1,0 +1,17 @@
+{
+  "name": "Pira-Tactical Driver HUD",
+  "short_name": "PiraTactical",
+  "description": "HUD Tático em Tempo Real para Motoristas de Piracicaba",
+  "start_url": "/mobile",
+  "display": "standalone",
+  "background_color": "#07090E",
+  "theme_color": "#00F59B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230D111A'/><circle cx='50' cy='50' r='30' fill='none' stroke='%2300F59B' stroke-width='8'/><polygon points='50,25 60,65 50,55 40,65' fill='%2300F59B'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

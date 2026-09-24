@@ -1,0 +1,286 @@
+{
+  "city": "Piracicaba - SP",
+  "coordinates": { "lat": -22.7253, "lng": -47.6492 },
+  "geofences": {
+    "safe_zones": [
+      { "id": "centro", "name": "Centro / Governador", "risk_level": "LOW", "surge_affinity": 0.8 },
+      { "id": "carlos_botelho", "name": "Av. Carlos Botelho / São Dimas", "risk_level": "LOW", "surge_affinity": 0.95 },
+      { "id": "esalq", "name": "Campus ESALQ / Agronomia", "risk_level": "LOW", "surge_affinity": 0.85 },
+      { "id": "shopping_piracicaba", "name": "Vila Rezende / Shopping Piracicaba", "risk_level": "LOW", "surge_affinity": 0.9 },
+      { "id": "rua_do_porto", "name": "Rua do Porto / Beira-Rio", "risk_level": "LOW_MEDIUM", "surge_affinity": 0.85 }
+    ],
+    "risk_zones": [
+      {
+        "id": "tci_mercado_diurno",
+        "name": "Entorno do Terminal Central (TCI) / Mercado Municipal",
+        "lat": -22.7235,
+        "lng": -47.6510,
+        "risk_level": "MEDIUM_HIGH",
+        "type": "CUIDADO_DIURNO",
+        "night_warning": "Risco diurno de furto de oportunidade e distração. Manter vidros fechados e celular fora do alcance visual direto nos semáforos da Armando de Salles.",
+        "deadhead_risk": 0.3
+      },
+      {
+        "id": "portelinha_diurno",
+        "name": "Favela da Portelinha / Comunidade Monte Líbano",
+        "lat": -22.7540,
+        "lng": -47.6250,
+        "risk_level": "HIGH",
+        "type": "CUIDADO_DIURNO",
+        "night_warning": "Becos e vielas de terra sem retorno para manobras. Solicitar embarque na via principal pavimentada tanto de dia quanto à noite.",
+        "deadhead_risk": 0.8
+      },
+      {
+        "id": "ponte_mirante_pico_diurno",
+        "name": "Gargalo da Ponte do Mirante / Av. Dona Jane Conceição",
+        "lat": -22.7160,
+        "lng": -47.6530,
+        "risk_level": "CRITICAL_BOTTLENECK",
+        "type": "GARGALO_DIURNO",
+        "night_warning": "Nos horários de pico (07h30-08h45 e 17h30-18h45) o funil gera atraso de 35 min. Só aceitar com dinâmico > 1.6x para não operar com prejuízo.",
+        "deadhead_risk": 0.4
+      },
+      {
+        "id": "pantanal_pauliceia",
+        "name": "Beco do Pantanal / Fundo Pauliceia (Viela do Amor)",
+        "lat": -22.7485,
+        "lng": -47.6621,
+        "risk_level": "HIGH",
+        "type": "PERIGO_NOTURNO",
+        "night_warning": "Evitar após as 21h. Ruas estreitas, declive acentuado e sem saída.",
+        "deadhead_risk": 0.9
+      },
+      {
+        "id": "jardim_brasilia_fundo",
+        "name": "Jardim Brasília / Extremo Mário Dedini / Cantagalo",
+        "lat": -22.6892,
+        "lng": -47.6610,
+        "risk_level": "HIGH",
+        "type": "PERIGO_NOTURNO",
+        "night_warning": "Risco de abordagem em semáforos sem iluminação e valas profundas após as 22h.",
+        "deadhead_risk": 0.85
+      },
+      {
+        "id": "morumbi_extremo",
+        "name": "Morumbi (Final do bairro / Alto do Morro)",
+        "lat": -22.7430,
+        "lng": -47.6180,
+        "risk_level": "MEDIUM_HIGH",
+        "type": "PERIGO_NOTURNO",
+        "night_warning": "Não aguardar passageiro parado com pisca-alerta ligado em ruas sem saída.",
+        "deadhead_risk": 0.75
+      },
+      {
+        "id": "estrada_artemis_noite",
+        "name": "Ligação Rural Ártemis / Tanquinho",
+        "lat": -22.6950,
+        "lng": -47.7420,
+        "risk_level": "EXTREME",
+        "type": "BLOQUEIO_CRITICO",
+        "night_warning": "Sem iluminação pública, sinal celular instável/inexistente e zero retorno.",
+        "deadhead_risk": 0.99
+      },
+      {
+        "id": "anhumas_madrugada",
+        "name": "Distrito de Anhumas / Ibitiruna",
+        "lat": -22.8450,
+        "lng": -47.6200,
+        "risk_level": "HIGH",
+        "type": "KM_MORTO",
+        "night_warning": "Viagem de 25km sem chance de retorno à noite. Exigir tarifa combinada ou recusar.",
+        "deadhead_risk": 0.98
+      }
+    ],
+    "deadhead_blackholes": [
+      {
+        "id": "tupi_industrial",
+        "name": "Distrito de Tupi / Ceasa",
+        "lat": -22.7210,
+        "lng": -47.5320,
+        "risk_level": "MEDIUM",
+        "type": "KM_MORTO",
+        "night_warning": "15km de km morto no retorno após as 19h.",
+        "deadhead_risk": 0.9
+      },
+      {
+        "id": "alphaville_sp264",
+        "name": "Alphaville Piracicaba (SP-127)",
+        "lat": -22.7650,
+        "lng": -47.5850,
+        "risk_level": "LOW",
+        "type": "KM_MORTO",
+        "night_warning": "Cliente classe A, mas retorno sempre vazio. Só aceitar com dinâmico > 1.4x.",
+        "deadhead_risk": 0.8
+      }
+    ]
+  },
+  "fixed_schedules": {
+    "universities": [
+      {
+        "name": "ESALQ / USP (Portão Central e Ferreira)",
+        "lat": -22.7126,
+        "lng": -47.6322,
+        "class_end_peak": "17:40 - 18:30 / 22:15 - 22:45",
+        "audience": 3500,
+        "purchasing_power": 75,
+        "tips_factor": 0.65,
+        "dynamic_prob": 0.85
+      },
+      {
+        "name": "Anhembi Morumbi / Piracicamirim",
+        "lat": -22.7389,
+        "lng": -47.6318,
+        "class_end_peak": "22:10 - 22:40",
+        "audience": 1800,
+        "purchasing_power": 70,
+        "tips_factor": 0.5,
+        "dynamic_prob": 0.8
+      },
+      {
+        "name": "FOP - UNICAMP (Faculdade de Odontologia)",
+        "lat": -22.7011,
+        "lng": -47.6487,
+        "class_end_peak": "17:30 - 18:15 / 21:45 - 22:15",
+        "audience": 1200,
+        "purchasing_power": 85,
+        "tips_factor": 0.7,
+        "dynamic_prob": 0.75
+      }
+    ],
+    "industrial_parks": [
+      {
+        "name": "Pólo Automotivo / Hyundai do Brasil (SP-127)",
+        "lat": -22.7561,
+        "lng": -47.5925,
+        "shift_changes": ["05:30 - 06:15", "14:30 - 15:15", "22:45 - 23:30"],
+        "audience": 4500,
+        "purchasing_power": 65,
+        "tips_factor": 0.35,
+        "dynamic_prob": 0.9,
+        "traffic_penalty": 0.75
+      },
+      {
+        "name": "Unileste (Pólo Industrial Leste - Dedini/Caterpillar/Arcelor)",
+        "lat": -22.7345,
+        "lng": -47.6081,
+        "shift_changes": ["06:40 - 07:15", "16:40 - 17:30", "22:15 - 22:45"],
+        "audience": 6000,
+        "purchasing_power": 65,
+        "tips_factor": 0.4,
+        "dynamic_prob": 0.85,
+        "traffic_penalty": 0.8
+      },
+      {
+        "name": "Parque Tecnológico de Piracicaba (Raízen / Agtechs)",
+        "lat": -22.6841,
+        "lng": -47.6385,
+        "shift_changes": ["17:30 - 18:30"],
+        "audience": 2200,
+        "purchasing_power": 90,
+        "tips_factor": 0.8,
+        "dynamic_prob": 0.8,
+        "traffic_penalty": 0.6
+      }
+    ],
+    "nightlife_hubs": [
+      {
+        "name": "Gastronomia Rua do Porto (Largo dos Pescadores)",
+        "lat": -22.7328,
+        "lng": -47.6539,
+        "peak_window": "12:00 - 15:30 (Fim de Semana) / 19:30 - 23:30 (Sex-Dom)",
+        "audience": 3000,
+        "purchasing_power": 80,
+        "tips_factor": 0.75,
+        "dynamic_prob": 0.85,
+        "traffic_penalty": 0.85
+      },
+      {
+        "name": "Av. Carlos Botelho & Saldanha Marinho (Pubs/Bares/Boates)",
+        "lat": -22.7214,
+        "lng": -47.6394,
+        "peak_window": "19:00 - 01:30",
+        "audience": 3500,
+        "purchasing_power": 85,
+        "tips_factor": 0.85,
+        "dynamic_prob": 0.95,
+        "traffic_penalty": 0.65
+      }
+    ],
+    "shopping_cinemas": [
+      {
+        "name": "Shopping Piracicaba / Multiplex Cine Araújo",
+        "lat": -22.7094,
+        "lng": -47.6568,
+        "peak_window": "21:45 - 22:40",
+        "audience": 2800,
+        "purchasing_power": 80,
+        "tips_factor": 0.6,
+        "dynamic_prob": 0.9,
+        "traffic_penalty": 0.5
+      }
+    ],
+    "cultural_venues": [
+      {
+        "name": "Teatro Municipal Dr. Losso Netto",
+        "lat": -22.7265,
+        "lng": -47.6441,
+        "capacity": 700,
+        "purchasing_power": 92,
+        "tips_factor": 0.85
+      },
+      {
+        "name": "Sesc Piracicaba (Teatro & Galpão)",
+        "lat": -22.7314,
+        "lng": -47.6515,
+        "capacity": 900,
+        "purchasing_power": 80,
+        "tips_factor": 0.7
+      },
+      {
+        "name": "Parque do Engenho Central",
+        "lat": -22.7239,
+        "lng": -47.6562,
+        "capacity": 15000,
+        "purchasing_power": 85,
+        "tips_factor": 0.85
+      }
+    ]
+  },
+  "intercity_rules": [
+    {
+      "destination": "Aeroporto de Viracopos (VCP) / Campinas",
+      "distance_km": 78,
+      "tolls_brl": 32.8,
+      "verdict": "OURO",
+      "strategy": "Só aceitar se a tarifa líquida for >= R$ 160. Retorno garantido ligando destino de volta no VCP ou Campinas Centro."
+    },
+    {
+      "destination": "Limeira Centro",
+      "distance_km": 34,
+      "tolls_brl": 14.5,
+      "verdict": "VIÁVEL",
+      "strategy": "Mínimo R$ 65 líquido. Ficar na Rodoviária ou Shopping Nações para pescar retorno antes de voltar vazio."
+    },
+    {
+      "destination": "Americana / Santa Bárbara d'Oeste",
+      "distance_km": 38,
+      "tolls_brl": 0,
+      "verdict": "EXCELENTE",
+      "strategy": "SP-304 sem pedágio. Boa liquidez de retorno pela Av. Santa Bárbara e Centro de Americana."
+    },
+    {
+      "destination": "Rio Claro",
+      "distance_km": 39,
+      "tolls_brl": 12.0,
+      "verdict": "MODERADO",
+      "strategy": "Evitar corridas após 21h em dias de semana por falta de demanda de retorno."
+    },
+    {
+      "destination": "São Pedro / Águas de São Pedro",
+      "distance_km": 32,
+      "tolls_brl": 0,
+      "verdict": "CUIDADO (FIM DE SEMANA OK / MEIO DE SEMANA RUIM)",
+      "strategy": "SP-304. Nos fins de semana há turistas voltando para Piracicaba. Em dia útil, retorno vazio quase 100% garantido."
+    }
+  ]
+}
